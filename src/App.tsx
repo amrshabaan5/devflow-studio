@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
-import { LogOut, Plus, Trash2, CheckCircle, Circle } from 'lucide-react';
+import { LogOut, Plus } from 'lucide-react';
 
 // استبدل الـ URL والـ Key ببياناتك من Supabase
 const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
@@ -66,11 +66,11 @@ export default function App() {
         ))}
       </div>
 
-      <motion.footer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-auto pt-6 border-t border-gray-800 text-center text-gray-500 text-sm flex flex-col items-center gap-3">
+      <motion.footer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-auto pt-6 border-t border-gray-800 text-center text-gray-500 text-sm flex flex-col items-center gap-3 w-full max-w-2xl">
         <p>مطوّر بواسطة <span className="text-blue-400 font-bold">Amr Shabaan</span></p>
         <div className="flex gap-4">
-          <a href="https://wa.me/201040192603" target="_blank" className="hover:text-green-500">واتساب 💬</a>
-          <a href="https://www.linkedin.com/in/amr-shabaan-aa9408353" target="_blank" className="hover:text-blue-500">LinkedIn 🔗</a>
+          <a href="https://wa.me/201040192603" target="_blank" rel="noopener noreferrer" className="hover:text-green-500 transition-colors">واتساب 💬</a>
+          <a href="https://www.linkedin.com/in/amr-shabaan-aa9408353" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">LinkedIn 🔗</a>
         </div>
       </motion.footer>
     </div>
