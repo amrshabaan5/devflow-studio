@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, LogOut, Layout, Clock, CheckCircle, ListTodo } from 'lucide-react';
+import { Plus, LogOut, Layout } from 'lucide-react';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
@@ -33,39 +33,21 @@ export default function App() {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from('tasks').update({ status }).eq('id', id);
-    fetchTasks();
+    const { error } = await supabase.from('tasks').update({ status }).eq('id', id);
+    if (error) console.error("Error updating:", error);
+    else fetchTasks();
   };
 
-  if (!session) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white font-bold">يرجى تسجيل الدخول للوصول للوحة التحكم...</div>;
-
-  const stats = [
-    { label: 'الكل', val: tasks.length, icon: ListTodo, color: 'text-blue-400' },
-    { label: 'قيد التنفيذ', val: tasks.filter(t => t.status === 'In Progress').length, icon: Clock, color: 'text-yellow-400' },
-    { label: 'تم الإنجاز', val: tasks.filter(t => t.status === 'Done').length, icon: CheckCircle, color: 'text-green-400' },
-  ];
+  if (!session) return <div className="p-10 text-white min-h-screen bg-gray-950 flex items-center justify-center">يرجى تسجيل الدخول...</div>;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 font-sans">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">أهلاً، {session.user.email?.split('@')[0]} 👋</h1>
-        <button onClick={() => supabase.auth.signOut()} className="flex items-center gap-2 text-red-400 hover:text-red-300 transition">
+        <button onClick={() => supabase.auth.signOut()} className="text-red-400 flex items-center gap-2">
           <LogOut size={18} /> خروج
         </button>
       </header>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {stats.map((s, i) => (
-          <div key={i} className="bg-gray-900 p-4 rounded-xl border border-gray-800 flex items-center gap-4">
-            <s.icon className={`${s.color} w-8 h-8`} />
-            <div>
-              <div className="text-2xl font-bold">{s.val}</div>
-              <div className="text-gray-500 text-xs">{s.label}</div>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Input Section */}
       <div className="flex gap-2 mb-8">
@@ -88,7 +70,7 @@ export default function App() {
               <Layout size={18} /> {status}
             </h2>
             {tasks.filter(t => t.status === status).map(task => (
-              <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 hover:border-gray-600 transition">
+              <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700">
                 <p className="font-medium mb-3">{task.title}</p>
                 <select 
                   className="bg-gray-950 text-xs text-gray-400 p-1 rounded border border-gray-700 w-full" 
@@ -101,9 +83,6 @@ export default function App() {
                 </select>
               </div>
             ))}
-            {tasks.filter(t => t.status === status).length === 0 && (
-              <p className="text-gray-600 text-sm italic text-center py-4">لا توجد مهام هنا...</p>
-            )}
           </div>
         ))}
       </div>
