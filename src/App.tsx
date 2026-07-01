@@ -1,9 +1,7 @@
+import { LogOut, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
-import { LogOut } from 'lucide-react';
-import { Plus } from 'lucide-react';
-
 const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
 export default function App() {
