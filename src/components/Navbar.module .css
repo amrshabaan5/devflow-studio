@@ -1,0 +1,32 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #1a1a1a; /* لون خلفية غامق شيك للـ Navbar */
+  border-bottom: 1px solid #333; /* خط رفيع يفصل الـ Navbar عن باقي الصفحة */
+}
+
+.navbar h2 {
+  color: #646cff; /* لون مميز للوجو */
+  margin: 0;
+}
+
+.navLinks {
+  display: flex;
+  gap: 25px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLinks li {
+  color: #e0e0e0;
+  font-weight: 500;
+  cursor: pointer; /* بيخلي الماوس يقلب شكل إيد */
+  transition: color 0.3s ease; /* بيخلي حركة تغيير اللون ناعمة */
+}
+
+.navLinks li:hover {
+  color: #646cff; /* اللون اللي هيظهر لما تقف بالماوس على الكلمة */
+}
