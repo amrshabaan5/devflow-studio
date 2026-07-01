@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
-// استبدل الـ URL والـ Key ببياناتك من Supabase
 const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
 export default function App() {
