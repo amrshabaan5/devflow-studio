@@ -33,9 +33,19 @@ export default function App() {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from('tasks').update({ status }).eq('id', id);
-    if (error) console.error("Error updating:", error);
-    else fetchTasks();
+    // التأكد من أن الـ id موجود قبل الإرسال
+    if (!id) return;
+    
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: status })
+      .eq('id', id);
+    
+    if (error) {
+      console.error("Error updating:", error);
+    } else {
+      fetchTasks();
+    }
   };
 
   if (!session) return <div className="p-10 text-white min-h-screen bg-gray-950 flex items-center justify-center">يرجى تسجيل الدخول...</div>;
@@ -49,27 +59,25 @@ export default function App() {
         </button>
       </header>
 
-      {/* Input Section */}
       <div className="flex gap-2 mb-8">
         <input 
-          className="flex-1 p-3 bg-gray-900 rounded-xl border border-gray-800 outline-none focus:border-blue-500" 
+          className="flex-1 p-3 bg-gray-900 rounded-xl border border-gray-800" 
           value={newTask} 
           onChange={(e) => setNewTask(e.target.value)} 
           placeholder="أضف مهمة جديدة..." 
         />
-        <button onClick={addTask} className="bg-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition flex items-center gap-2">
+        <button onClick={addTask} className="bg-blue-600 px-6 py-3 rounded-xl font-bold">
           <Plus size={20} /> إضافة
         </button>
       </div>
 
-      {/* Kanban Board */}
       <div className="grid grid-cols-3 gap-4">
         {['To Do', 'In Progress', 'Done'].map((status) => (
           <div key={status} className="bg-gray-900 p-4 rounded-xl border border-gray-800">
             <h2 className="font-bold mb-4 flex items-center gap-2 text-gray-300">
               <Layout size={18} /> {status}
             </h2>
-            {tasks.filter(t => t.status === status).map(task => (
+            {tasks.filter(t => t.status === status).map((task) => (
               <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700">
                 <p className="font-medium mb-3">{task.title}</p>
                 <select 
