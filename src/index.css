@@ -8,6 +8,7 @@ html, body {
 }
 }
 
+/* التنسيق الأساسي للمود المظلم */
 .dark {
 background-color: #030711;
 color: white;
