@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, LogOut, Layout, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { Plus, LogOut, Layout, ChevronLeft, ChevronRight, AlertCircle, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const supabase = createClient(
@@ -13,6 +13,7 @@ export default function App() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState('');
   const [priority, setPriority] = useState('low');
+  const [dueDate, setDueDate] = useState(''); // الحالة الجديدة للتاريخ
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -29,8 +30,10 @@ export default function App() {
 
   const addTask = async () => {
     if (!newTask.trim() || !session) return;
-    await supabase.from('tasks').insert([{ title: newTask, user_id: session.user.id, status: 'To Do', priority }]);
+    // إضافة التاريخ لقاعدة البيانات
+    await supabase.from('tasks').insert([{ title: newTask, user_id: session.user.id, status: 'To Do', priority, due_date: dueDate }]);
     setNewTask('');
+    setDueDate('');
     fetchTasks();
   };
 
@@ -60,8 +63,10 @@ export default function App() {
         <button onClick={() => supabase.auth.signOut()} className="text-red-400"><LogOut size={18} /></button>
       </header>
 
+      {/* منطقة الإضافة مع التاريخ */}
       <div className="flex gap-2 mb-8 bg-gray-900 p-4 rounded-xl border border-gray-800">
         <input className="flex-1 bg-transparent outline-none" value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
+        <input type="date" className="bg-gray-800 rounded px-2" onChange={(e) => setDueDate(e.target.value)} value={dueDate} />
         <select className="bg-gray-800 rounded px-2" onChange={(e) => setPriority(e.target.value)}>
           <option value="low">عادي</option>
           <option value="medium">متوسط</option>
@@ -78,10 +83,12 @@ export default function App() {
               {tasks.filter(t => t.status === status).map((task) => (
                 <motion.div key={task.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className={`bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex justify-between items-center ${getPriorityColor(task.priority)}`}>
-                  <div className="flex items-center gap-2">
-                    {/* هنا استخدمنا AlertCircle للمهام الهامة */}
-                    {task.priority === 'high' && <AlertCircle size={16} className="text-red-500" />}
-                    <p className="font-medium">{task.title}</p>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                        {task.priority === 'high' && <AlertCircle size={14} className="text-red-500" />}
+                        <p className="font-medium">{task.title}</p>
+                    </div>
+                    {task.due_date && <p className="text-[10px] text-gray-500 flex items-center gap-1"><Calendar size={10} /> {task.due_date}</p>}
                   </div>
                   <div className="flex gap-1">
                     {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>}
