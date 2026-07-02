@@ -51,10 +51,13 @@ export default function App() {
     const nextIndex = direction === 'right' ? currentIndex + 1 : currentIndex - 1;
     if (nextIndex >= 0 && nextIndex < statuses.length) {
       const newStatus = statuses[nextIndex];
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
       await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+      fetchTasks();
     }
   };
+
+  // دالة الإحصائيات (الميزة الجديدة)
+  const getTaskCount = (status: string) => tasks.filter(t => t.status === status).length;
 
   if (!session) return <div style={{ background: theme.bg, color: theme.text, height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>يرجى تسجيل الدخول...</div>;
 
@@ -87,7 +90,10 @@ export default function App() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
         {['To Do', 'In Progress', 'Done'].map((status) => (
           <div key={status} style={{ background: theme.card, padding: '16px', borderRadius: '12px', border: `1px solid ${theme.border}` }}>
-            <h2 style={{ color: theme.subText, marginBottom: '16px', fontSize: '14px' }}>{status}</h2>
+            <h2 style={{ color: theme.subText, marginBottom: '16px', fontSize: '14px', display: 'flex', justifyContent: 'space-between' }}>
+              {status}
+              <span style={{ background: theme.border, padding: '2px 8px', borderRadius: '10px', fontSize: '10px' }}>{getTaskCount(status)}</span>
+            </h2>
             <AnimatePresence>
               {tasks.filter(t => t.status === status).map((task) => (
                 <motion.div key={task.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -97,13 +103,12 @@ export default function App() {
                         {task.priority === 'high' && <AlertCircle size={14} color="#EF4444" />}
                         <p style={{ fontWeight: '500', margin: 0 }}>{task.title}</p>
                     </div>
-                    {/* أزرار التنقل */}
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.text }}><ChevronLeft size={16} /></button>}
                       {status !== 'Done' && <button onClick={() => moveTask(task.id, status, 'right')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.text }}><ChevronRight size={16} /></button>}
                     </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: theme.subText, marginTop: '8px', display: 'flex', gap: '8px' }}>
+                  <div style={{ fontSize: '11px', color: theme.subText, marginTop: '8px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Calendar size={10} /> {task.due_date || 'بدون تاريخ'}</span>
                   </div>
                 </motion.div>
