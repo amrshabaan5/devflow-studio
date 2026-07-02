@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Plus, LogOut, Layout, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
@@ -32,7 +33,6 @@ export default function App() {
     fetchTasks();
   };
 
-  // دالة التنقل السريعة (Optimistic Update)
   const moveTask = async (id: number, currentStatus: string, direction: 'left' | 'right') => {
     const statuses = ['To Do', 'In Progress', 'Done'];
     const currentIndex = statuses.indexOf(currentStatus);
@@ -40,19 +40,9 @@ export default function App() {
 
     if (nextIndex >= 0 && nextIndex < statuses.length) {
       const newStatus = statuses[nextIndex];
-
-      // 1. تحديث فوري للواجهة
-      setTasks(prevTasks => 
-        prevTasks.map(t => t.id === id ? { ...t, status: newStatus } : t)
-      );
-
-      // 2. تحديث قاعدة البيانات في الخلفية
+      setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
       const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
-      
-      if (error) {
-        console.error("Error updating:", error);
-        fetchTasks(); // في حالة الخطأ، نرجع الحالة القديمة من السيرفر
-      }
+      if (error) { console.error(error); fetchTasks(); }
     }
   };
 
@@ -61,7 +51,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 font-sans">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">أهلاً، {session.user.email?.split('@')[0]}</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Layout size={28} className="text-blue-500" /> DevFlow Studio
+        </h1>
         <button onClick={() => supabase.auth.signOut()} className="text-red-400 flex items-center gap-2">
           <LogOut size={18} /> خروج
         </button>
@@ -74,30 +66,34 @@ export default function App() {
           onChange={(e) => setNewTask(e.target.value)} 
           placeholder="أضف مهمة جديدة..." 
         />
-        <button onClick={addTask} className="bg-blue-600 px-6 py-3 rounded-xl font-bold">
+        <button onClick={addTask} className="bg-blue-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
           <Plus size={20} /> إضافة
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         {['To Do', 'In Progress', 'Done'].map((status) => (
-          <div key={status} className="bg-gray-900 p-4 rounded-xl border border-gray-800">
-            <h2 className="font-bold mb-4 flex items-center gap-2 text-gray-300">
-              <Layout size={18} /> {status}
+          <div key={status} className="bg-gray-900 p-4 rounded-xl border border-gray-800 min-h-[400px]">
+            <h2 className="font-bold mb-4 text-gray-300 flex items-center gap-2">
+              {status}
             </h2>
-            {tasks.filter(t => t.status === status).map((task) => (
-              <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex justify-between items-center">
-                <p className="font-medium">{task.title}</p>
-                <div className="flex gap-1">
-                  {status !== 'To Do' && (
-                    <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>
-                  )}
-                  {status !== 'Done' && (
-                    <button onClick={() => moveTask(task.id, status, 'right')} className="p-1 hover:bg-gray-700 rounded"><ChevronRight size={16}/></button>
-                  )}
-                </div>
-              </div>
-            ))}
+            <AnimatePresence>
+              {tasks.filter(t => t.status === status).map((task) => (
+                <motion.div 
+                  key={task.id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex justify-between items-center"
+                >
+                  <p className="font-medium">{task.title}</p>
+                  <div className="flex gap-1">
+                    {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>}
+                    {status !== 'Done' && <button onClick={() => moveTask(task.id, status, 'right')} className="p-1 hover:bg-gray-700 rounded"><ChevronRight size={16}/></button>}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         ))}
       </div>
