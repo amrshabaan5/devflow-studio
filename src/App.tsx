@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, LogOut, Layout, ChevronLeft, ChevronRight, AlertCircle, Calendar, Clock, Moon, Sun } from 'lucide-react';
+import { Plus, LogOut, Layout, AlertCircle, Calendar, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const supabase = createClient(
@@ -12,18 +12,17 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState('');
-  const [priority, setPriority] = useState('low');
+  const [priority, setPriority] = useState('low'); // تم استخدامها الآن
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(true);
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (darkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [darkMode]);
+  const theme = {
+    bg: darkMode ? '#030711' : '#F9FAFB',
+    card: darkMode ? '#111827' : '#FFFFFF',
+    text: darkMode ? '#FFFFFF' : '#1F2937',
+    subText: darkMode ? '#9CA3AF' : '#6B7280',
+    border: darkMode ? '#374151' : '#E5E7EB',
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -32,7 +31,7 @@ export default function App() {
 
   const fetchTasks = async () => {
     if (!session) return;
-    const { data } = await supabase.from('tasks').select('id, title, status, priority, due_date, created_at').eq('user_id', session.user.id);
+    const { data } = await supabase.from('tasks').select('*').eq('user_id', session.user.id);
     setTasks(data || []);
   };
 
@@ -46,71 +45,48 @@ export default function App() {
     fetchTasks();
   };
 
-  const moveTask = async (id: number, currentStatus: string, direction: 'left' | 'right') => {
-    const statuses = ['To Do', 'In Progress', 'Done'];
-    const currentIndex = statuses.indexOf(currentStatus);
-    const nextIndex = direction === 'right' ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex >= 0 && nextIndex < statuses.length) {
-      const newStatus = statuses[nextIndex];
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
-      await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
-    }
-  };
-
-  const getPriorityColor = (p: string) => {
-    if (p === 'high') return 'border-l-4 border-red-500';
-    if (p === 'medium') return 'border-l-4 border-yellow-500';
-    return 'border-l-4 border-green-500';
-  };
-
-  if (!session) return <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center text-gray-900 dark:text-white">يرجى تسجيل الدخول...</div>;
+  if (!session) return <div style={{ background: theme.bg, color: theme.text, height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>يرجى تسجيل الدخول...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-300 p-6 font-sans">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Layout className="text-blue-500" /> DevFlow Studio</h1>
-        <div className="flex items-center gap-4">
-          <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 transition-all">
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+    <div style={{ background: theme.bg, color: theme.text, minHeight: '100vh', padding: '24px', transition: '0.3s' }}>
+      
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Layout color="#3B82F6" /> DevFlow Studio
+        </h1>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => setDarkMode(!darkMode)} style={{ padding: '8px 16px', background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', color: theme.text }}>
+            {darkMode ? '☀️' : '🌙'}
           </button>
-          <button onClick={() => supabase.auth.signOut()} className="text-red-500 hover:text-red-600"><LogOut size={18} /></button>
+          <button onClick={() => supabase.auth.signOut()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#EF4444' }}><LogOut /></button>
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-        <input className="flex-1 bg-transparent outline-none p-2" value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
-        <input type="date" className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none" onChange={(e) => setDueDate(e.target.value)} value={dueDate} />
-        <select className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none" onChange={(e) => setPriority(e.target.value)}>
+      <div style={{ background: theme.card, padding: '16px', borderRadius: '12px', border: `1px solid ${theme.border}`, display: 'flex', gap: '10px', marginBottom: '32px' }}>
+        <input style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: theme.text }} value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
+        <select value={priority} onChange={(e) => setPriority(e.target.value)} style={{ background: theme.bg, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: '6px' }}>
           <option value="low">عادي</option>
-          <option value="medium">متوسط</option>
-          <option value="high">هام جداً</option>
+          <option value="high">هام</option>
         </select>
-        <button onClick={addTask} className="bg-blue-600 px-4 py-2 rounded-lg font-bold text-white"><Plus size={20} /></button>
+        <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} style={{ background: theme.bg, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: '6px' }} />
+        <button onClick={addTask} style={{ background: '#2563EB', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}><Plus /></button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
         {['To Do', 'In Progress', 'Done'].map((status) => (
-          <div key={status} className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 min-h-[400px]">
-            <h2 className="font-bold mb-4 text-gray-500 dark:text-gray-300">{status}</h2>
+          <div key={status} style={{ background: theme.card, padding: '16px', borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+            <h2 style={{ color: theme.subText, marginBottom: '16px', fontSize: '14px' }}>{status}</h2>
             <AnimatePresence>
               {tasks.filter(t => t.status === status).map((task) => (
                 <motion.div key={task.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className={`bg-gray-100 dark:bg-gray-800 p-4 mb-3 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center ${getPriorityColor(task.priority)}`}>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                        {task.priority === 'high' && <AlertCircle size={14} className="text-red-500" />}
-                        <p className="font-medium">{task.title}</p>
-                    </div>
-                    <div className="flex gap-3">
-                        {task.due_date && <p className="text-[10px] text-gray-500 flex items-center gap-1"><Calendar size={10} /> {task.due_date}</p>}
-                        <p className="text-[10px] text-gray-500 flex items-center gap-1">
-                          <Clock size={10} /> {task.created_at ? new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
-                        </p>
-                    </div>
+                  style={{ background: darkMode ? '#1F2937' : '#F3F4F6', padding: '12px', borderRadius: '8px', marginBottom: '8px', borderLeft: `4px solid ${task.priority === 'high' ? '#EF4444' : '#22C55E'}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {task.priority === 'high' && <AlertCircle size={14} color="#EF4444" />}
+                    <p style={{ fontWeight: '500', margin: 0 }}>{task.title}</p>
                   </div>
-                  <div className="flex gap-1">
-                    {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>}
-                    {status !== 'Done' && <button onClick={() => moveTask(task.id, status, 'right')} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronRight size={16}/></button>}
+                  <div style={{ fontSize: '11px', color: theme.subText, marginTop: '8px', display: 'flex', gap: '8px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Calendar size={10} /> {task.due_date || 'بدون تاريخ'}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Clock size={10} /> {new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </motion.div>
               ))}
