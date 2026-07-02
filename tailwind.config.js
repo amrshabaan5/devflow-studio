@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class', // أضف السطر ده
+  darkMode: 'class', // لازم تكون class مش 'media'
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",

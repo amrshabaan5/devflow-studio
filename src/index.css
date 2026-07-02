@@ -1,1 +1,14 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+html, body {
+@apply h-full w-full m-0 p-0;
+}
+}
+
+.dark {
+background-color: #030711;
+color: white;
+}

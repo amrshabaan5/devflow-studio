@@ -16,14 +16,12 @@ export default function App() {
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(true);
 
-  // إجبار الـ Body على تغيير اللون عند تغيير المود
   useEffect(() => {
+    const root = window.document.documentElement;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#030711'; 
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#F9FAFB';
+      root.classList.remove('dark');
     }
   }, [darkMode]);
 
@@ -65,10 +63,10 @@ export default function App() {
     return 'border-l-4 border-green-500';
   };
 
-  if (!session) return <div className="p-10 min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center text-gray-900 dark:text-white">يرجى تسجيل الدخول...</div>;
+  if (!session) return <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center text-gray-900 dark:text-white">يرجى تسجيل الدخول...</div>;
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-300 p-6 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-300 p-6 font-sans">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Layout className="text-blue-500" /> DevFlow Studio</h1>
         <div className="flex items-center gap-4">
@@ -79,10 +77,10 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex gap-2 mb-8 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-        <input className="flex-1 bg-transparent outline-none p-2 text-gray-900 dark:text-white" value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
-        <input type="date" className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none text-gray-900 dark:text-white" onChange={(e) => setDueDate(e.target.value)} value={dueDate} />
-        <select className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none text-gray-900 dark:text-white" onChange={(e) => setPriority(e.target.value)}>
+      <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
+        <input className="flex-1 bg-transparent outline-none p-2" value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
+        <input type="date" className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none" onChange={(e) => setDueDate(e.target.value)} value={dueDate} />
+        <select className="bg-gray-100 dark:bg-gray-800 rounded px-2 outline-none" onChange={(e) => setPriority(e.target.value)}>
           <option value="low">عادي</option>
           <option value="medium">متوسط</option>
           <option value="high">هام جداً</option>
@@ -90,7 +88,7 @@ export default function App() {
         <button onClick={addTask} className="bg-blue-600 px-4 py-2 rounded-lg font-bold text-white"><Plus size={20} /></button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {['To Do', 'In Progress', 'Done'].map((status) => (
           <div key={status} className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 min-h-[400px]">
             <h2 className="font-bold mb-4 text-gray-500 dark:text-gray-300">{status}</h2>
@@ -101,13 +99,12 @@ export default function App() {
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                         {task.priority === 'high' && <AlertCircle size={14} className="text-red-500" />}
-                        <p className="font-medium text-gray-900 dark:text-white">{task.title}</p>
+                        <p className="font-medium">{task.title}</p>
                     </div>
                     <div className="flex gap-3">
                         {task.due_date && <p className="text-[10px] text-gray-500 flex items-center gap-1"><Calendar size={10} /> {task.due_date}</p>}
                         <p className="text-[10px] text-gray-500 flex items-center gap-1">
-                          <Clock size={10} /> 
-                          {task.created_at ? new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                          <Clock size={10} /> {task.created_at ? new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                         </p>
                     </div>
                   </div>
