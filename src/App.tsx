@@ -32,7 +32,7 @@ export default function App() {
     fetchTasks();
   };
 
-  // دالة التنقل بين الأعمدة
+  // دالة التنقل السريعة (Optimistic Update)
   const moveTask = async (id: number, currentStatus: string, direction: 'left' | 'right') => {
     const statuses = ['To Do', 'In Progress', 'Done'];
     const currentIndex = statuses.indexOf(currentStatus);
@@ -40,8 +40,19 @@ export default function App() {
 
     if (nextIndex >= 0 && nextIndex < statuses.length) {
       const newStatus = statuses[nextIndex];
-      await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
-      fetchTasks();
+
+      // 1. تحديث فوري للواجهة
+      setTasks(prevTasks => 
+        prevTasks.map(t => t.id === id ? { ...t, status: newStatus } : t)
+      );
+
+      // 2. تحديث قاعدة البيانات في الخلفية
+      const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+      
+      if (error) {
+        console.error("Error updating:", error);
+        fetchTasks(); // في حالة الخطأ، نرجع الحالة القديمة من السيرفر
+      }
     }
   };
 
