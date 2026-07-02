@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, LogOut, Layout } from 'lucide-react';
+import { Plus, LogOut, Layout, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
@@ -19,7 +19,6 @@ export default function App() {
 
   const fetchTasks = async () => {
     if (!session) return;
-    // هنا بنجيب كل الأعمدة بما فيها id و status
     const { data } = await supabase.from('tasks').select('*').eq('user_id', session.user.id);
     setTasks(data || []);
   };
@@ -28,16 +27,22 @@ export default function App() {
 
   const addTask = async () => {
     if (!newTask.trim() || !session) return;
-    // هنا ضفنا status افتراضي للمهمة الجديدة
     await supabase.from('tasks').insert([{ title: newTask, user_id: session.user.id, status: 'To Do' }]);
     setNewTask('');
     fetchTasks();
   };
 
-  const updateStatus = async (id: number, status: string) => {
-    const { error } = await supabase.from('tasks').update({ status }).eq('id', id);
-    if (error) console.error("Error updating:", error);
-    else fetchTasks();
+  // دالة التنقل بين الأعمدة
+  const moveTask = async (id: number, currentStatus: string, direction: 'left' | 'right') => {
+    const statuses = ['To Do', 'In Progress', 'Done'];
+    const currentIndex = statuses.indexOf(currentStatus);
+    const nextIndex = direction === 'right' ? currentIndex + 1 : currentIndex - 1;
+
+    if (nextIndex >= 0 && nextIndex < statuses.length) {
+      const newStatus = statuses[nextIndex];
+      await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+      fetchTasks();
+    }
   };
 
   if (!session) return <div className="p-10 text-white min-h-screen bg-gray-950 flex items-center justify-center">يرجى تسجيل الدخول...</div>;
@@ -70,17 +75,16 @@ export default function App() {
               <Layout size={18} /> {status}
             </h2>
             {tasks.filter(t => t.status === status).map((task) => (
-              <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700">
-                <p className="font-medium mb-3">{task.title}</p>
-                <select 
-                  className="bg-gray-950 text-xs text-gray-400 p-1 rounded border border-gray-700 w-full" 
-                  onChange={(e) => updateStatus(task.id, e.target.value)} 
-                  value={task.status}
-                >
-                  <option value="To Do">📋 To Do</option>
-                  <option value="In Progress">🚀 In Progress</option>
-                  <option value="Done">✅ Done</option>
-                </select>
+              <div key={task.id} className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex justify-between items-center">
+                <p className="font-medium">{task.title}</p>
+                <div className="flex gap-1">
+                  {status !== 'To Do' && (
+                    <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>
+                  )}
+                  {status !== 'Done' && (
+                    <button onClick={() => moveTask(task.id, status, 'right')} className="p-1 hover:bg-gray-700 rounded"><ChevronRight size={16}/></button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
