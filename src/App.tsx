@@ -58,7 +58,8 @@ export default function App() {
 
   return (
     <div className={darkMode ? "dark" : ""}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white p-6 transition-colors duration-300 font-sans">
+      {/* تم إضافة h-full ومساحات للألوان لضمان تطبيق الخلفية بشكل صحيح */}
+      <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white p-6 transition-colors duration-300 font-sans">
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold flex items-center gap-2"><Layout className="text-blue-500" /> DevFlow Studio</h1>
           <div className="flex items-center gap-4">
@@ -87,7 +88,7 @@ export default function App() {
               <AnimatePresence>
                 {tasks.filter(t => t.status === status).map((task) => (
                   <motion.div key={task.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className={`bg-gray-100 dark:bg-gray-800 p-4 mb-3 rounded-lg border-gray-200 dark:border-gray-700 flex justify-between items-center ${getPriorityColor(task.priority)}`}>
+                    className={`bg-gray-100 dark:bg-gray-800 p-4 mb-3 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center ${getPriorityColor(task.priority)}`}>
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                           {task.priority === 'high' && <AlertCircle size={14} className="text-red-500" />}
