@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Plus, LogOut, Layout, AlertCircle, Calendar, Clock } from 'lucide-react';
+import { Plus, LogOut, Layout, AlertCircle, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const supabase = createClient(
@@ -12,7 +12,7 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState('');
-  const [priority, setPriority] = useState('low'); // تم استخدامها الآن
+  const [priority, setPriority] = useState('low');
   const [dueDate, setDueDate] = useState('');
   const [darkMode, setDarkMode] = useState(true);
 
@@ -45,6 +45,17 @@ export default function App() {
     fetchTasks();
   };
 
+  const moveTask = async (id: number, currentStatus: string, direction: 'left' | 'right') => {
+    const statuses = ['To Do', 'In Progress', 'Done'];
+    const currentIndex = statuses.indexOf(currentStatus);
+    const nextIndex = direction === 'right' ? currentIndex + 1 : currentIndex - 1;
+    if (nextIndex >= 0 && nextIndex < statuses.length) {
+      const newStatus = statuses[nextIndex];
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+      await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+    }
+  };
+
   if (!session) return <div style={{ background: theme.bg, color: theme.text, height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>يرجى تسجيل الدخول...</div>;
 
   return (
@@ -66,6 +77,7 @@ export default function App() {
         <input style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: theme.text }} value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="أضف مهمة..." />
         <select value={priority} onChange={(e) => setPriority(e.target.value)} style={{ background: theme.bg, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: '6px' }}>
           <option value="low">عادي</option>
+          <option value="medium">متوسط</option>
           <option value="high">هام</option>
         </select>
         <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} style={{ background: theme.bg, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: '6px' }} />
@@ -80,13 +92,19 @@ export default function App() {
               {tasks.filter(t => t.status === status).map((task) => (
                 <motion.div key={task.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   style={{ background: darkMode ? '#1F2937' : '#F3F4F6', padding: '12px', borderRadius: '8px', marginBottom: '8px', borderLeft: `4px solid ${task.priority === 'high' ? '#EF4444' : '#22C55E'}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {task.priority === 'high' && <AlertCircle size={14} color="#EF4444" />}
-                    <p style={{ fontWeight: '500', margin: 0 }}>{task.title}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {task.priority === 'high' && <AlertCircle size={14} color="#EF4444" />}
+                        <p style={{ fontWeight: '500', margin: 0 }}>{task.title}</p>
+                    </div>
+                    {/* أزرار التنقل */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.text }}><ChevronLeft size={16} /></button>}
+                      {status !== 'Done' && <button onClick={() => moveTask(task.id, status, 'right')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.text }}><ChevronRight size={16} /></button>}
+                    </div>
                   </div>
                   <div style={{ fontSize: '11px', color: theme.subText, marginTop: '8px', display: 'flex', gap: '8px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Calendar size={10} /> {task.due_date || 'بدون تاريخ'}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Clock size={10} /> {new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </motion.div>
               ))}
