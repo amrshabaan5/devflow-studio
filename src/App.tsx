@@ -86,12 +86,13 @@ export default function App() {
                         {task.priority === 'high' && <AlertCircle size={14} className="text-red-500" />}
                         <p className="font-medium">{task.title}</p>
                     </div>
-                    {task.due_date && (
-                        <div className="flex gap-3">
-                            <p className="text-[10px] text-gray-500 flex items-center gap-1"><Calendar size={10} /> {task.due_date}</p>
-                            <p className="text-[10px] text-gray-500 flex items-center gap-1"><Clock size={10} /> {new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                        </div>
-                    )}
+                    <div className="flex gap-3">
+                        {task.due_date && <p className="text-[10px] text-gray-500 flex items-center gap-1"><Calendar size={10} /> {task.due_date}</p>}
+                        <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                          <Clock size={10} /> 
+                          {task.created_at ? new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                        </p>
+                    </div>
                   </div>
                   <div className="flex gap-1">
                     {status !== 'To Do' && <button onClick={() => moveTask(task.id, status, 'left')} className="p-1 hover:bg-gray-700 rounded"><ChevronLeft size={16}/></button>}
