@@ -19,6 +19,7 @@ export default function App() {
 
   const fetchTasks = async () => {
     if (!session) return;
+    // هنا بنجيب كل الأعمدة بما فيها id و status
     const { data } = await supabase.from('tasks').select('*').eq('user_id', session.user.id);
     setTasks(data || []);
   };
@@ -27,25 +28,16 @@ export default function App() {
 
   const addTask = async () => {
     if (!newTask.trim() || !session) return;
+    // هنا ضفنا status افتراضي للمهمة الجديدة
     await supabase.from('tasks').insert([{ title: newTask, user_id: session.user.id, status: 'To Do' }]);
     setNewTask('');
     fetchTasks();
   };
 
-  const updateStatus = async (id: string, status: string) => {
-    // التأكد من أن الـ id موجود قبل الإرسال
-    if (!id) return;
-    
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: status })
-      .eq('id', id);
-    
-    if (error) {
-      console.error("Error updating:", error);
-    } else {
-      fetchTasks();
-    }
+  const updateStatus = async (id: number, status: string) => {
+    const { error } = await supabase.from('tasks').update({ status }).eq('id', id);
+    if (error) console.error("Error updating:", error);
+    else fetchTasks();
   };
 
   if (!session) return <div className="p-10 text-white min-h-screen bg-gray-950 flex items-center justify-center">يرجى تسجيل الدخول...</div>;
@@ -53,7 +45,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 font-sans">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">أهلاً، {session.user.email?.split('@')[0]} 👋</h1>
+        <h1 className="text-2xl font-bold">أهلاً، {session.user.email?.split('@')[0]}</h1>
         <button onClick={() => supabase.auth.signOut()} className="text-red-400 flex items-center gap-2">
           <LogOut size={18} /> خروج
         </button>
